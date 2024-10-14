@@ -44,4 +44,18 @@ class VideoController extends Controller
             'video' => $video,
         ], 201);
     }
+
+    public function index()
+    {
+        $videos = Video::all(['title', 'embed_url']);
+
+        $videosList = $videos->map(function ($video) {
+            return [
+                'title' => $video->title,
+                'thumbnail_url' => "https://img.youtube.com/vi/{$video->youtube_id}/hqdefault.jpg", 
+            ];
+        });
+
+        return response()->json($videosList);
+    }
 }
