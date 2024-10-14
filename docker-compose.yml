@@ -21,6 +21,10 @@ services:
       - DB_PASSWORD=1234
     expose:
       - "9000"
+    command: >
+      sh -c "until nc -z db 5432; 
+      do echo 'Waiting for Postgres...'; sleep 1; 
+      done && php artisan migrate --force && php-fpm"
 
   db:
     image: postgres

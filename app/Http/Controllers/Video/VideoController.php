@@ -17,28 +17,29 @@ class VideoController extends Controller
         ]);
 
         $youtubeId = $request->input('youtube_id');
-        
+
         $response = Http::get("https://www.googleapis.com/youtube/v3/videos", [
             'id' => $youtubeId,
             'key' => env('YOUTUBE_API_KEY'),
-            'part' => 'snippet,statistics',
+            'part' => 'snippet',
         ]);
 
         if ($response->failed() || empty($response['items'])) {
-            return response()->json(['error' => 'Invalid or not found YouTube ID'], 404);
+            return response()->json(['error' => 'Video not found'], 404);
         }
 
         $videoData = $response['items'][0]['snippet'];
-        $videoStats = $response['items'][0]['statistics'];
+
+        $userId = auth()->id();
 
         $video = Video::create([
             'youtube_id' => $youtubeId,
             'title' => $videoData['title'],
             'description' => $videoData['description'],
             'embed_url' => "https://www.youtube.com/embed/$youtubeId",
-            'views' => $videoStats['viewCount'] ?? 0,
-            'likes' => $videoStats['likeCount'] ?? 0,
-            'user_id' => auth()->id(),
+            'views' => 0,
+            'likes' => 0,
+            'user_id' => $userId,
         ]);
 
         return response()->json([

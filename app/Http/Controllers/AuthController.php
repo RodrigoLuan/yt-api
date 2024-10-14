@@ -11,69 +11,62 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    /**
-     * Registro de novo usuário.
-     */
     public function register(Request $request)
     {
-        // Validação dos dados
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        // Se a validação falhar
         if ($validator->fails()) {
             $errors = $validator->errors();
 
-            // Verifica se o erro é relacionado ao campo de email já registrado
             if ($errors->has('email')) {
                 return response()->json([
                     'error' => 'Email already registered.'
-                ], 409); // Retorna 409 Conflict
+                ], 409); 
             }
 
-            return response()->json($errors, 400); // Para outros erros de validação, retorna 400
+            return response()->json($errors, 400); 
         }
 
-        // Criação do novo usuário
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        // Gera o token JWT para o novo usuário
-        $token = JWTAuth::fromUser($user);
+        auth()->login($user);
 
-        // Retorna a resposta de sucesso com o token JWT
+        try {
+            $token = JWTAuth::fromUser($user);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not create token'], 500);
+        }
+
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-            'token' => $token
-        ], 201); // Retorna 201 Created
+            'access_token' => $token  // Alterando de 'token' para 'access_token'
+        ], 201);
     }
 
-    /**
-     * Login do usuário.
-     */
     public function login(Request $request)
     {
-        // Valida os campos de email e senha
-        $credentials = $request->only('email', 'password');
+        try {
+            $credentials = $request->only('email', 'password');
 
-        if (!$token = Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401); // 401 Unauthorized
+            if (!$token = Auth::attempt($credentials)) {
+                return response()->json(['error' => 'Invalid credentials'], 401); 
+            }
+
+            return $this->respondWithToken($token);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        // Retorna o token JWT se as credenciais forem válidas
-        return $this->respondWithToken($token);
     }
 
-    /**
-     * Logout do usuário.
-     */
     public function logout()
     {
         Auth::logout();
@@ -81,9 +74,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    /**
-     * Retorna o token JWT.
-     */
+
     protected function respondWithToken($token)
     {
         return response()->json([
@@ -93,9 +84,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Retorna o usuário autenticado.
-     */
+
     public function me()
     {
         return response()->json(Auth::user());

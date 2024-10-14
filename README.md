@@ -1,70 +1,89 @@
-<<<<<<< HEAD
-# yt-api
-=======
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Laravel JWT Authentication API Youtube
+Este projeto é uma API baseada em Laravel que utiliza autenticação JWT (JSON Web Tokens). Ela é construída com Docker Compose para facilitar o gerenciamento de dependências, como banco de dados PostgreSQL e Redis, juntamente com o Nginx para servir a aplicação.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Requisitos
+Docker
+Docker Compose
+Instruções para Configuração
+1. Clone o Repositório
+bash
+Copiar código
+git clone https://github.com/seu-usuario/seu-projeto.git
+cd seu-projeto
+2. Configure o Arquivo .env
+Copie o arquivo .env.example para .env e modifique as variáveis necessárias:
 
-## About Laravel
+bash
+Copiar código
+cp .env.example .env
+Certifique-se de que as seguintes variáveis estão corretamente configuradas no .env:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+env
+Copiar código
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:chave_gerada
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=netshow
+DB_USERNAME=postgres
+DB_PASSWORD=1234
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+JWT_SECRET=chave_jwt
+Você pode gerar a chave JWT com o seguinte comando:
 
-## Learning Laravel
+bash
+Copiar código
+php artisan jwt:secret
+3. Configure o Docker
+Certifique-se de que o arquivo docker-compose.yml esteja configurado corretamente. O docker-compose.yml define os serviços necessários, incluindo app, db, nginx e redis.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+4. Subir os Contêineres com Docker
+Inicie o Docker Compose para construir e iniciar a aplicação, banco de dados, Nginx e Redis:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+bash
+Copiar código
+docker-compose up --build
+Este comando irá:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Esperar o banco de dados Postgres ficar disponível.
+Executar as migrações do banco de dados.
+Iniciar o PHP-FPM e o Nginx.
+5. Acessar a Aplicação
+Depois que todos os serviços estiverem em execução, você pode acessar a aplicação no navegador:
 
-## Laravel Sponsors
+arduino
+Copiar código
+http://localhost:8000
+6. Testar os Endpoints
+6.1 Registro de Usuário
+Faça uma requisição POST para /api/register para registrar um novo usuário.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+URL: /api/register
+Método: POST
+Body (JSON):
+json
+Copiar código
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password",
+  "password_confirmation": "password"
+}
+6.2 Login de Usuário
+Faça uma requisição POST para /api/login para autenticar um usuário.
 
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
->>>>>>> 349bd99 (Primeiro commit)
+URL: /api/login
+Método: POST
+Body (JSON):
+json
+Copiar código
+{
+  "email": "test@example.com",
+  "password": "password"
+}
+A resposta incluirá o access_token que deve ser usado nas próximas requisições.
