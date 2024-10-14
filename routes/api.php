@@ -15,5 +15,5 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:api')->group(function () {
-    Route::post('/videos', [VideoController::class, 'store']);
+    Route::post('/video', [VideoController::class, 'store']);
 });
