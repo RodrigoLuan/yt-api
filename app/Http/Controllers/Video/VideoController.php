@@ -21,7 +21,7 @@ class VideoController extends Controller
         $response = Http::get("https://www.googleapis.com/youtube/v3/videos", [
             'id' => $youtubeId,
             'key' => env('YOUTUBE_API_KEY'),
-            'part' => 'snippet',
+            'part' => 'snippet,statistics',
         ]);
 
         if ($response->failed() || empty($response['items'])) {
@@ -29,14 +29,15 @@ class VideoController extends Controller
         }
 
         $videoData = $response['items'][0]['snippet'];
+        $videoStats = $response['items'][0]['statistics'];
 
         $video = Video::create([
             'youtube_id' => $youtubeId,
             'title' => $videoData['title'],
             'description' => $videoData['description'],
             'embed_url' => "https://www.youtube.com/embed/$youtubeId",
-            'views' => 0,
-            'likes' => 0,
+            'views' => $videoStats['viewCount'] ?? 0,
+            'likes' => $videoStats['likeCount'] ?? 0,
             'user_id' => auth()->id(),
         ]);
 
@@ -67,6 +68,23 @@ class VideoController extends Controller
             return Video::findOrFail($id);
         });
 
+        $youtubeId = $video->youtube_id;
+
+        $response = Http::get("https://www.googleapis.com/youtube/v3/videos", [
+            'id' => $youtubeId,
+            'key' => env('YOUTUBE_API_KEY'),
+            'part' => 'snippet,statistics',
+        ]);
+
+        if ($response->failed() || empty($response['items'])) {
+            return response()->json(['error' => 'Could not retrieve video data from YouTube'], 500);
+        }
+
+        $videoStats = $response['items'][0]['statistics'];
+
+        $video->views = $videoStats['viewCount'] ?? 0;
+        $video->likes = $videoStats['likeCount'] ?? 0;
+
         $video->increment('views');
 
         return response()->json([
@@ -74,22 +92,6 @@ class VideoController extends Controller
             'description' => $video->description,
             'embed_url' => $video->embed_url,
             'views' => $video->views,
-            'likes' => $video->likes,
-        ]);
-    }
-
-    public function incrementLikes($id)
-    {
-        $video = Cache::remember("video_details_{$id}", 60 * 5, function () use ($id) {
-            return Video::findOrFail($id);
-        });
-
-        $video->increment('likes');
-
-        Cache::forget("video_details_{$id}");
-
-        return response()->json([
-            'message' => 'Video liked successfully',
             'likes' => $video->likes,
         ]);
     }
