@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Video;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class VideoController extends Controller
 {
@@ -34,7 +35,7 @@ class VideoController extends Controller
             'title' => $videoData['title'],
             'description' => $videoData['description'],
             'embed_url' => "https://www.youtube.com/embed/$youtubeId",
-            'views' => 0, 
+            'views' => 0,
             'likes' => 0,
             'user_id' => auth()->id(),
         ]);
@@ -47,15 +48,49 @@ class VideoController extends Controller
 
     public function index()
     {
-        $videos = Video::all(['title', 'embed_url']);
+        $videos = Video::all(['youtube_id', 'title', 'embed_url']);
 
         $videosList = $videos->map(function ($video) {
             return [
                 'title' => $video->title,
-                'thumbnail_url' => "https://img.youtube.com/vi/{$video->youtube_id}/hqdefault.jpg", 
+                'thumbnail_url' => "https://img.youtube.com/vi/{$video->youtube_id}/hqdefault.jpg",
+                'embed_url' => $video->embed_url,
             ];
         });
 
         return response()->json($videosList);
+    }
+
+    public function show($id)
+    {
+        $video = Cache::remember("video_details_{$id}", 60 * 5, function () use ($id) {
+            return Video::findOrFail($id);
+        });
+
+        $video->increment('views');
+
+        return response()->json([
+            'title' => $video->title,
+            'description' => $video->description,
+            'embed_url' => $video->embed_url,
+            'views' => $video->views,
+            'likes' => $video->likes,
+        ]);
+    }
+
+    public function incrementLikes($id)
+    {
+        $video = Cache::remember("video_details_{$id}", 60 * 5, function () use ($id) {
+            return Video::findOrFail($id);
+        });
+
+        $video->increment('likes');
+
+        Cache::forget("video_details_{$id}");
+
+        return response()->json([
+            'message' => 'Video liked successfully',
+            'likes' => $video->likes,
+        ]);
     }
 }
