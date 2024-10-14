@@ -10,7 +10,7 @@ services:
       - .:/var/www/html
     depends_on:
       - db
-      - redis  # Adiciona dependência do Redis
+      - redis
     environment:
       - APP_ENV=local
       - DB_CONNECTION=pgsql
@@ -20,7 +20,7 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=1234
     expose:
-      - "9000"  # Porta PHP-FPM
+      - "9000"
 
   db:
     image: postgres
